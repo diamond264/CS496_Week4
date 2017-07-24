@@ -1,28 +1,26 @@
 ﻿using UnityEngine;
-using UnityEngine.Networking;
+using UnityEngine.UI;
 
-public class PlayerMovement : NetworkBehaviour
+public class PlayerMovement : MonoBehaviour
 {
 	public float speed = 6f;
 
-	Vector3 movement;
+    Vector3 movement;
 	Animator anim;
 	Rigidbody playerRigidbody;
+    PlayerHealth playerhealth;
+    bool isScoped;
+    public GameObject scope;
+    public Camera mainCamera;
+
+    public float scopedFOV = 15f;
+    private float normalFOV;
+
 	int floorMask;
 	float camRayLength = 100f;
 
-    public override void OnStartClient()
-    {
-        base.OnStartClient();
-        Camera.main.GetComponent<CameraFollow>().setTarget(gameObject);
-    }
-
     void Awake()
 	{
-        if (isLocalPlayer)
-        {
-            Camera.main.GetComponent<CameraFollow>().setTarget(gameObject);
-        }
         floorMask = LayerMask.GetMask ("Floor");
 		anim = GetComponent<Animator> ();
 		playerRigidbody = GetComponent<Rigidbody> ();
@@ -30,15 +28,20 @@ public class PlayerMovement : NetworkBehaviour
 
 	void FixedUpdate()
 	{
-		if (!isLocalPlayer) {
-			return;
-		}
-        this.gameObject.tag = "myPlayer";
-
+        if (Input.GetButton("Fire2"))
+        {
+            scope.SetActive(true);
+            normalFOV = mainCamera.fieldOfView;
+            mainCamera.fieldOfView = scopedFOV;
+        }
+        else
+        {
+            scope.SetActive(false);
+            mainCamera.fieldOfView = normalFOV;
+        }
         float h = Input.GetAxisRaw ("Horizontal");
 		float v = Input.GetAxisRaw ("Vertical");
-
-		Move (h, v);
+        Move (h, v);
 		Turning ();
 		Animating (h, v);
 	}
@@ -52,7 +55,7 @@ public class PlayerMovement : NetworkBehaviour
 		playerRigidbody.MovePosition (transform.position + movement);
 	}
 
-	void Turning()
+    void Turning()
 	{
 		Ray camRay = Camera.main.ScreenPointToRay (Input.mousePosition);
 
@@ -73,10 +76,4 @@ public class PlayerMovement : NetworkBehaviour
 		bool walking = h != 0f || v != 0f;
 		anim.SetBool ("IsWalking", walking);
 	}
-
-    public override void OnStartLocalPlayer()
-    {
-        // to know this is local player
-        base.OnStartLocalPlayer();
-    }
 }

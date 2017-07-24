@@ -6,6 +6,9 @@ public class PlayerShooting : MonoBehaviour
     public int damagePerShot = 20;
     public float timeBetweenBullets = 0.15f;
     public float range = 100f;
+    public GameObject bulletPrefab;
+    public Transform bulletSpawn;
+    public float bulletSpeed = 6.0f;
 
 
     float timer;
@@ -13,10 +16,9 @@ public class PlayerShooting : MonoBehaviour
     RaycastHit shootHit;
     int shootableMask;
     ParticleSystem gunParticles;
-    LineRenderer gunLine;
+    //LineRenderer gunLine;
     AudioSource gunAudio;
     Light gunLight;
-    //PhotonView photonView;
     float effectsDisplayTime = 0.2f;
 
 
@@ -24,7 +26,7 @@ public class PlayerShooting : MonoBehaviour
     {
         shootableMask = LayerMask.GetMask ("Shootable");
         gunParticles = GetComponent<ParticleSystem> ();
-        gunLine = GetComponent <LineRenderer> ();
+        //gunLine = GetComponent <LineRenderer> ();
         gunAudio = GetComponent<AudioSource> ();
         gunLight = GetComponent<Light> ();
     }
@@ -48,7 +50,7 @@ public class PlayerShooting : MonoBehaviour
 
     public void DisableEffects ()
     {
-        gunLine.enabled = false;
+        //gunLine.enabled = false;
         gunLight.enabled = false;
     }
 
@@ -58,20 +60,24 @@ public class PlayerShooting : MonoBehaviour
 
         gunAudio.Play ();
 
+        //gunLight.transform.position = bulletSpawn.position;
         gunLight.enabled = true;
 
+        //gunParticles.transform.position = bulletSpawn.position;
         gunParticles.Stop ();
         gunParticles.Play ();
 
-        gunLine.enabled = true;
-        gunLine.SetPosition (0, transform.position);
+        //gunLine.enabled = true;
+        //gunLine.SetPosition (0, transform.position);
 
-        shootRay.origin = transform.position;
+        shootRay.origin = bulletSpawn.position;
         shootRay.direction = transform.forward;
 
         // Spawn it on Clients
-        //NetworkServer.Spawn(shootRay);
-
+        GameObject bullet = (GameObject)Instantiate(bulletPrefab, bulletSpawn.position, bulletSpawn.rotation);
+        bullet.GetComponent<Rigidbody>().velocity = transform.forward * bulletSpeed;
+        Destroy(bullet, 5);
+        /*
         if(Physics.Raycast (shootRay, out shootHit, range, shootableMask))
         {
             EnemyHealth enemyHealth = shootHit.collider.GetComponent <EnemyHealth> ();
@@ -84,6 +90,6 @@ public class PlayerShooting : MonoBehaviour
         else
         {
             gunLine.SetPosition (1, shootRay.origin + shootRay.direction * range);
-        }
+        }*/
     }
 }

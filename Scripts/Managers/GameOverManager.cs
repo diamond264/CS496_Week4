@@ -4,7 +4,6 @@ public class GameOverManager : MonoBehaviour
 {
     public PlayerHealth playerHealth;
 
-
     Animator anim;
 
 
